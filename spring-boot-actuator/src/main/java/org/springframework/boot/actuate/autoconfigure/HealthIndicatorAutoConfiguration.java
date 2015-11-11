@@ -23,6 +23,9 @@ import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
 
 import com.datastax.driver.core.Cluster;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.hibernate.instance.HazelcastInstanceFactory;
+
 import org.apache.solr.client.solrj.SolrServer;
 import org.elasticsearch.client.Client;
 
@@ -37,6 +40,7 @@ import org.springframework.boot.actuate.health.DiskSpaceHealthIndicator;
 import org.springframework.boot.actuate.health.DiskSpaceHealthIndicatorProperties;
 import org.springframework.boot.actuate.health.ElasticsearchHealthIndicator;
 import org.springframework.boot.actuate.health.ElasticsearchHealthIndicatorProperties;
+import org.springframework.boot.actuate.health.HazelcastHealthIndicator;
 import org.springframework.boot.actuate.health.HealthAggregator;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.JmsHealthIndicator;
@@ -215,6 +219,22 @@ public class HealthIndicatorAutoConfiguration {
 			return (poolMetadata == null ? null : poolMetadata.getValidationQuery());
 		}
 
+	}
+
+	@Configuration
+	@ConditionalOnBean(HazelcastInstance.class)
+	@ConditionalOnEnabledHealthIndicator("hazelcast")
+	public static class HazelcastHealthIndicatorConfiguration extends
+			CompositeHealthIndicatorConfiguration<HazelcastHealthIndicator, HazelcastInstance> {
+
+		@Autowired
+		private Map<String, HazelcastInstance> hazelcastInstances;
+
+		@Bean
+		@ConditionalOnMissingBean(name = "hazelcastHealthIndicator")
+		public HealthIndicator hazelcastHealthIndicator() {
+			return createHealthIndicator(this.hazelcastInstances);
+		}
 	}
 
 	@Configuration
