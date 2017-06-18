@@ -24,6 +24,8 @@
 		<aether.version>1.0.2.v20150114</aether.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<junit-platform.version>1.0.0-RC3</junit-platform.version>
+		<junit-vintage.version>${junit.version}.0-RC3</junit-vintage.version>
 		<maven.version>3.1.1</maven.version>
 		<spock.version>1.0-groovy-2.4</spock.version>
 	</properties>
@@ -571,6 +573,18 @@
 					</systemPropertyVariables>
 					<argLine>-Xmx1024m</argLine>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.junit.platform</groupId>
+						<artifactId>junit-platform-surefire-provider</artifactId>
+						<version>${junit-platform.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.junit.vintage</groupId>
+						<artifactId>junit-vintage-engine</artifactId>
+						<version>${junit-vintage.version}</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
