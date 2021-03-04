@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2020 the original author or authors.
+ * Copyright 2012-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,13 @@ import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
 
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
-import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
-import org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint;
+import org.springframework.boot.actuate.endpoint.web.annotation.RestControllerEndpoint;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * {@link Endpoint @Endpoint} that outputs metrics in a format that can be scraped by the
@@ -39,7 +43,7 @@ import org.springframework.lang.Nullable;
  * @author Johnny Lim
  * @since 2.0.0
  */
-@WebEndpoint(id = "prometheus")
+@RestControllerEndpoint(id = "prometheus")
 public class PrometheusScrapeEndpoint {
 
 	private final CollectorRegistry collectorRegistry;
@@ -48,15 +52,17 @@ public class PrometheusScrapeEndpoint {
 		this.collectorRegistry = collectorRegistry;
 	}
 
-	@ReadOperation(produces = TextFormat.CONTENT_TYPE_004)
-	public String scrape(@Nullable Set<String> includedNames) {
+	@GetMapping(produces = {TextFormat.CONTENT_TYPE_004, TextFormat.CONTENT_TYPE_OPENMETRICS_100})
+	public ResponseEntity<String> scrape(@RequestParam(name = "includedNames", required = false) Set<String> includedNames,
+										 @RequestHeader(name = "Accept", required = false) String acceptHeader) {
 		try {
 			Writer writer = new StringWriter();
 			Enumeration<MetricFamilySamples> samples = (includedNames != null)
 					? this.collectorRegistry.filteredMetricFamilySamples(includedNames)
 					: this.collectorRegistry.metricFamilySamples();
-			TextFormat.write004(writer, samples);
-			return writer.toString();
+			String contentType = TextFormat.chooseContentType(acceptHeader);
+			TextFormat.writeFormat(contentType, writer, samples);
+			return ResponseEntity.ok().contentType(MediaType.valueOf(contentType)).body(writer.toString());
 		}
 		catch (IOException ex) {
 			// This actually never happens since StringWriter::write() doesn't throw any
