@@ -16,19 +16,36 @@
 
 package org.springframework.boot.micrometer.metrics.autoconfigure;
 
-import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadingMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmThreadMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmClassLoadingMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmCpuMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmMemoryMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmThreadMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmClassLoadingMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmCpuMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmThreadMeterConventions;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassUnloadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuLoadMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuTimeMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryCommittedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryMaxMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryUsedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmThreadCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmClassCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmClassLoadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmClassUnloadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmCpuCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmCpuLoadMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmCpuTimeMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmMemoryCommittedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmMemoryMaxMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmMemoryUsedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmThreadCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmClassCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmClassLoadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmClassUnloadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmCpuCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmCpuLoadMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmCpuTimeMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryCommittedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryMaxMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryUsedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmThreadCountMeterConvention;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -57,27 +74,63 @@ public final class SemanticConventionAutoConfiguration {
 	static class MicrometerSemanticConventionConfiguration {
 
 		@Bean
-		@ConditionalOnMissingBean(JvmMemoryMeterConventions.class)
-		MicrometerJvmMemoryMeterConventions micrometerJvmMemoryMeterConventions() {
-			return new MicrometerJvmMemoryMeterConventions();
+		@ConditionalOnMissingBean(JvmMemoryUsedMeterConvention.class)
+		MicrometerJvmMemoryUsedMeterConvention micrometerJvmMemoryUsedMeterConvention() {
+			return new MicrometerJvmMemoryUsedMeterConvention();
 		}
 
 		@Bean
-		@ConditionalOnMissingBean(JvmClassLoadingMeterConventions.class)
-		MicrometerJvmClassLoadingMeterConventions micrometerJvmClassLoadingMeterConventions() {
-			return new MicrometerJvmClassLoadingMeterConventions();
+		@ConditionalOnMissingBean(JvmMemoryCommittedMeterConvention.class)
+		MicrometerJvmMemoryCommittedMeterConvention micrometerJvmMemoryCommittedMeterConvention() {
+			return new MicrometerJvmMemoryCommittedMeterConvention();
 		}
 
 		@Bean
-		@ConditionalOnMissingBean(JvmCpuMeterConventions.class)
-		MicrometerJvmCpuMeterConventions micrometerJvmCpuMeterConventions() {
-			return new MicrometerJvmCpuMeterConventions(Tags.empty());
+		@ConditionalOnMissingBean(JvmMemoryMaxMeterConvention.class)
+		MicrometerJvmMemoryMaxMeterConvention micrometerJvmMemoryMaxMeterConvention() {
+			return new MicrometerJvmMemoryMaxMeterConvention();
 		}
 
 		@Bean
-		@ConditionalOnMissingBean(JvmThreadMeterConventions.class)
-		MicrometerJvmThreadMeterConventions micrometerJvmThreadMeterConventions() {
-			return new MicrometerJvmThreadMeterConventions(Tags.empty());
+		@ConditionalOnMissingBean(JvmClassCountMeterConvention.class)
+		MicrometerJvmClassCountMeterConvention micrometerJvmClassCountMeterConvention() {
+			return new MicrometerJvmClassCountMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmClassLoadedMeterConvention.class)
+		MicrometerJvmClassLoadedMeterConvention micrometerJvmClassLoadedMeterConvention() {
+			return new MicrometerJvmClassLoadedMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmClassUnloadedMeterConvention.class)
+		MicrometerJvmClassUnloadedMeterConvention micrometerJvmClassUnloadedMeterConvention() {
+			return new MicrometerJvmClassUnloadedMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmCpuCountMeterConvention.class)
+		MicrometerJvmCpuCountMeterConvention micrometerJvmCpuCountMeterConvention() {
+			return new MicrometerJvmCpuCountMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmCpuLoadMeterConvention.class)
+		MicrometerJvmCpuLoadMeterConvention micrometerJvmCpuLoadMeterConvention() {
+			return new MicrometerJvmCpuLoadMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmCpuTimeMeterConvention.class)
+		MicrometerJvmCpuTimeMeterConvention micrometerJvmCpuTimeMeterConvention() {
+			return new MicrometerJvmCpuTimeMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmThreadCountMeterConvention.class)
+		MicrometerJvmThreadCountMeterConvention micrometerJvmThreadCountMeterConvention() {
+			return new MicrometerJvmThreadCountMeterConvention();
 		}
 
 	}
@@ -87,27 +140,63 @@ public final class SemanticConventionAutoConfiguration {
 	static class OpenTelemetrySemanticConventionConfiguration {
 
 		@Bean
-		@ConditionalOnMissingBean(JvmMemoryMeterConventions.class)
-		OpenTelemetryJvmMemoryMeterConventions openTelemetryJvmMemoryMeterConventions() {
-			return new OpenTelemetryJvmMemoryMeterConventions(Tags.empty());
+		@ConditionalOnMissingBean(JvmMemoryUsedMeterConvention.class)
+		OpenTelemetryJvmMemoryUsedMeterConvention openTelemetryJvmMemoryUsedMeterConvention() {
+			return new OpenTelemetryJvmMemoryUsedMeterConvention();
 		}
 
 		@Bean
-		@ConditionalOnMissingBean(JvmClassLoadingMeterConventions.class)
-		OpenTelemetryJvmClassLoadingMeterConventions openTelemetryJvmClassLoadingMeterConventions() {
-			return new OpenTelemetryJvmClassLoadingMeterConventions();
+		@ConditionalOnMissingBean(JvmMemoryCommittedMeterConvention.class)
+		OpenTelemetryJvmMemoryCommittedMeterConvention openTelemetryJvmMemoryCommittedMeterConvention() {
+			return new OpenTelemetryJvmMemoryCommittedMeterConvention();
 		}
 
 		@Bean
-		@ConditionalOnMissingBean(JvmCpuMeterConventions.class)
-		OpenTelemetryJvmCpuMeterConventions openTelemetryJvmCpuMeterConventions() {
-			return new OpenTelemetryJvmCpuMeterConventions(Tags.empty());
+		@ConditionalOnMissingBean(JvmMemoryMaxMeterConvention.class)
+		OpenTelemetryJvmMemoryMaxMeterConvention openTelemetryJvmMemoryMaxMeterConvention() {
+			return new OpenTelemetryJvmMemoryMaxMeterConvention();
 		}
 
 		@Bean
-		@ConditionalOnMissingBean(JvmThreadMeterConventions.class)
-		OpenTelemetryJvmThreadMeterConventions openTelemetryJvmThreadMeterConventions() {
-			return new OpenTelemetryJvmThreadMeterConventions(Tags.empty());
+		@ConditionalOnMissingBean(JvmClassCountMeterConvention.class)
+		OpenTelemetryJvmClassCountMeterConvention openTelemetryJvmClassCountMeterConvention() {
+			return new OpenTelemetryJvmClassCountMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmClassLoadedMeterConvention.class)
+		OpenTelemetryJvmClassLoadedMeterConvention openTelemetryJvmClassLoadedMeterConvention() {
+			return new OpenTelemetryJvmClassLoadedMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmClassUnloadedMeterConvention.class)
+		OpenTelemetryJvmClassUnloadedMeterConvention openTelemetryJvmClassUnloadedMeterConvention() {
+			return new OpenTelemetryJvmClassUnloadedMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmCpuCountMeterConvention.class)
+		OpenTelemetryJvmCpuCountMeterConvention openTelemetryJvmCpuCountMeterConvention() {
+			return new OpenTelemetryJvmCpuCountMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmCpuLoadMeterConvention.class)
+		OpenTelemetryJvmCpuLoadMeterConvention openTelemetryJvmCpuLoadMeterConvention() {
+			return new OpenTelemetryJvmCpuLoadMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmCpuTimeMeterConvention.class)
+		OpenTelemetryJvmCpuTimeMeterConvention openTelemetryJvmCpuTimeMeterConvention() {
+			return new OpenTelemetryJvmCpuTimeMeterConvention();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(JvmThreadCountMeterConvention.class)
+		OpenTelemetryJvmThreadCountMeterConvention openTelemetryJvmThreadCountMeterConvention() {
+			return new OpenTelemetryJvmThreadCountMeterConvention();
 		}
 
 	}

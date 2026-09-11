@@ -25,9 +25,13 @@ import io.micrometer.core.instrument.binder.jvm.JvmHeapPressureMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmInfoMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadingMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmThreadMeterConventions;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassUnloadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryCommittedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryMaxMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryUsedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmThreadCountMeterConvention;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
@@ -88,11 +92,17 @@ class JvmMetricsAutoConfigurationTests {
 
 	@Test
 	void allowCustomJvmMemoryMeterConventionsToBeUsed() {
-		JvmMemoryMeterConventions jvmMemoryMeterConventions = mock(JvmMemoryMeterConventions.class);
-		this.contextRunner.withBean(JvmMemoryMeterConventions.class, () -> jvmMemoryMeterConventions)
+		JvmMemoryUsedMeterConvention usedConvention = mock(JvmMemoryUsedMeterConvention.class);
+		JvmMemoryCommittedMeterConvention committedConvention = mock(JvmMemoryCommittedMeterConvention.class);
+		JvmMemoryMaxMeterConvention maxConvention = mock(JvmMemoryMaxMeterConvention.class);
+		this.contextRunner.withBean(JvmMemoryUsedMeterConvention.class, () -> usedConvention)
+			.withBean(JvmMemoryCommittedMeterConvention.class, () -> committedConvention)
+			.withBean(JvmMemoryMaxMeterConvention.class, () -> maxConvention)
 			.run((context) -> assertThat(context).hasSingleBean(JvmMemoryMetrics.class)
 				.getBean(JvmMemoryMetrics.class)
-				.hasFieldOrPropertyWithValue("conventions", jvmMemoryMeterConventions));
+				.hasFieldOrPropertyWithValue("memoryUsedConvention", usedConvention)
+				.hasFieldOrPropertyWithValue("memoryCommittedConvention", committedConvention)
+				.hasFieldOrPropertyWithValue("memoryMaxConvention", maxConvention));
 	}
 
 	@Test
@@ -103,11 +113,11 @@ class JvmMetricsAutoConfigurationTests {
 
 	@Test
 	void allowCustomJvmThreadMeterConventionsToBeUsed() {
-		JvmThreadMeterConventions jvmThreadMeterConventions = mock(JvmThreadMeterConventions.class);
-		this.contextRunner.withBean(JvmThreadMeterConventions.class, () -> jvmThreadMeterConventions)
+		JvmThreadCountMeterConvention threadCountConvention = mock(JvmThreadCountMeterConvention.class);
+		this.contextRunner.withBean(JvmThreadCountMeterConvention.class, () -> threadCountConvention)
 			.run((context) -> assertThat(context).hasSingleBean(JvmThreadMetrics.class)
 				.getBean(JvmThreadMetrics.class)
-				.hasFieldOrPropertyWithValue("conventions", jvmThreadMeterConventions));
+				.hasFieldOrPropertyWithValue("threadCountConvention", threadCountConvention));
 	}
 
 	@Test
@@ -118,11 +128,17 @@ class JvmMetricsAutoConfigurationTests {
 
 	@Test
 	void allowCustomJvmClassLoadingMeterConventionsToBeUsed() {
-		JvmClassLoadingMeterConventions jvmClassLoadingMeterConventions = mock(JvmClassLoadingMeterConventions.class);
-		this.contextRunner.withBean(JvmClassLoadingMeterConventions.class, () -> jvmClassLoadingMeterConventions)
+		JvmClassCountMeterConvention countConvention = mock(JvmClassCountMeterConvention.class);
+		JvmClassLoadedMeterConvention loadedConvention = mock(JvmClassLoadedMeterConvention.class);
+		JvmClassUnloadedMeterConvention unloadedConvention = mock(JvmClassUnloadedMeterConvention.class);
+		this.contextRunner.withBean(JvmClassCountMeterConvention.class, () -> countConvention)
+			.withBean(JvmClassLoadedMeterConvention.class, () -> loadedConvention)
+			.withBean(JvmClassUnloadedMeterConvention.class, () -> unloadedConvention)
 			.run((context) -> assertThat(context).hasSingleBean(ClassLoaderMetrics.class)
 				.getBean(ClassLoaderMetrics.class)
-				.hasFieldOrPropertyWithValue("conventions", jvmClassLoadingMeterConventions));
+				.hasFieldOrPropertyWithValue("classCountConvention", countConvention)
+				.hasFieldOrPropertyWithValue("classLoadedConvention", loadedConvention)
+				.hasFieldOrPropertyWithValue("classUnloadedConvention", unloadedConvention));
 	}
 
 	@Test

@@ -17,12 +17,13 @@
 package org.springframework.boot.micrometer.metrics.autoconfigure.system;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuMeterConventions;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuLoadMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuTimeMeterConvention;
 import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
@@ -61,10 +62,14 @@ public final class SystemMetricsAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	ProcessorMetrics processorMetrics(ObjectProvider<JvmCpuMeterConventions> jvmCpuMeterConventions) {
-		JvmCpuMeterConventions conventions = jvmCpuMeterConventions.getIfAvailable();
-		return (conventions != null) ? new ProcessorMetrics(Collections.emptyList(), conventions)
-				: new ProcessorMetrics();
+	ProcessorMetrics processorMetrics(ObjectProvider<JvmCpuCountMeterConvention> cpuCountConvention,
+			ObjectProvider<JvmCpuLoadMeterConvention> cpuLoadConvention,
+			ObjectProvider<JvmCpuTimeMeterConvention> cpuTimeConvention) {
+		ProcessorMetrics.Builder builder = ProcessorMetrics.builder();
+		cpuCountConvention.ifAvailable(builder::cpuCountConvention);
+		cpuLoadConvention.ifAvailable(builder::cpuLoadConvention);
+		cpuTimeConvention.ifAvailable(builder::cpuTimeConvention);
+		return builder.build();
 	}
 
 	@Bean

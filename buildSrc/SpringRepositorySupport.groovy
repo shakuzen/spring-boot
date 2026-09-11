@@ -104,6 +104,7 @@ class SpringRepositoriesExtension {
 	}
 
 	private void addRepositories(version, action) {
+		this.repositories.mavenLocal()
 		addReleaseTrainRepositoryIfNecessary("spring-release-train", action)
 		addCommercialRepositoryIfNecessary("release", false, "/spring-enterprise-maven-prod-local", action)
 		if (version.endsWith("-SNAPSHOT")) {

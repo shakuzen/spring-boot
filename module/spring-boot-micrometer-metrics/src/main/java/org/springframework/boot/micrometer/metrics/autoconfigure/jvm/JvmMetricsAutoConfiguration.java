@@ -16,8 +16,6 @@
 
 package org.springframework.boot.micrometer.metrics.autoconfigure.jvm;
 
-import java.util.Collections;
-
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
@@ -27,9 +25,13 @@ import io.micrometer.core.instrument.binder.jvm.JvmHeapPressureMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmInfoMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadingMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmThreadMeterConventions;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassUnloadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryCommittedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryMaxMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryUsedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmThreadCountMeterConvention;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.aot.hint.MemberCategory;
@@ -77,26 +79,34 @@ public final class JvmMetricsAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	JvmMemoryMetrics jvmMemoryMetrics(ObjectProvider<JvmMemoryMeterConventions> jvmMemoryMeterConventions) {
-		JvmMemoryMeterConventions conventions = jvmMemoryMeterConventions.getIfAvailable();
-		return (conventions != null) ? new JvmMemoryMetrics(Collections.emptyList(), conventions)
-				: new JvmMemoryMetrics();
+	JvmMemoryMetrics jvmMemoryMetrics(ObjectProvider<JvmMemoryUsedMeterConvention> memoryUsedConvention,
+			ObjectProvider<JvmMemoryCommittedMeterConvention> memoryCommittedConvention,
+			ObjectProvider<JvmMemoryMaxMeterConvention> memoryMaxConvention) {
+		JvmMemoryMetrics.Builder builder = JvmMemoryMetrics.builder();
+		memoryUsedConvention.ifAvailable(builder::memoryUsedConvention);
+		memoryCommittedConvention.ifAvailable(builder::memoryCommittedConvention);
+		memoryMaxConvention.ifAvailable(builder::memoryMaxConvention);
+		return builder.build();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	JvmThreadMetrics jvmThreadMetrics(ObjectProvider<JvmThreadMeterConventions> jvmThreadMeterConventions) {
-		JvmThreadMeterConventions conventions = jvmThreadMeterConventions.getIfAvailable();
-		return (conventions != null) ? new JvmThreadMetrics(Collections.emptyList(), conventions)
-				: new JvmThreadMetrics();
+	JvmThreadMetrics jvmThreadMetrics(ObjectProvider<JvmThreadCountMeterConvention> threadCountConvention) {
+		JvmThreadMetrics.Builder builder = JvmThreadMetrics.builder();
+		threadCountConvention.ifAvailable(builder::threadCountConvention);
+		return builder.build();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	ClassLoaderMetrics classLoaderMetrics(
-			ObjectProvider<JvmClassLoadingMeterConventions> jvmClassLoadingMeterConventions) {
-		JvmClassLoadingMeterConventions conventions = jvmClassLoadingMeterConventions.getIfAvailable();
-		return (conventions != null) ? new ClassLoaderMetrics(conventions) : new ClassLoaderMetrics();
+	ClassLoaderMetrics classLoaderMetrics(ObjectProvider<JvmClassCountMeterConvention> classCountConvention,
+			ObjectProvider<JvmClassLoadedMeterConvention> classLoadedConvention,
+			ObjectProvider<JvmClassUnloadedMeterConvention> classUnloadedConvention) {
+		ClassLoaderMetrics.Builder builder = ClassLoaderMetrics.builder();
+		classCountConvention.ifAvailable(builder::classCountConvention);
+		classLoadedConvention.ifAvailable(builder::classLoadedConvention);
+		classUnloadedConvention.ifAvailable(builder::classUnloadedConvention);
+		return builder.build();
 	}
 
 	@Bean

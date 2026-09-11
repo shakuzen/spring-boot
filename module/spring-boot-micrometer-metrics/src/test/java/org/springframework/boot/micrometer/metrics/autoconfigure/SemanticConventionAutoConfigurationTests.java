@@ -16,22 +16,36 @@
 
 package org.springframework.boot.micrometer.metrics.autoconfigure;
 
-import java.lang.management.MemoryPoolMXBean;
-
-import io.micrometer.core.instrument.binder.MeterConvention;
-import io.micrometer.core.instrument.binder.SimpleMeterConvention;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadingMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.JvmThreadMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmClassLoadingMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmCpuMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmMemoryMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmThreadMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmClassLoadingMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmCpuMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryMeterConventions;
-import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmThreadMeterConventions;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassLoadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmClassUnloadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuLoadMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmCpuTimeMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryCommittedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryMaxMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmMemoryUsedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.JvmThreadCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmClassCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmClassLoadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmClassUnloadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmCpuCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmCpuLoadMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmCpuTimeMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmMemoryCommittedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmMemoryMaxMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmMemoryUsedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.micrometer.MicrometerJvmThreadCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmClassCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmClassLoadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmClassUnloadedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmCpuCountMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmCpuLoadMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmCpuTimeMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryCommittedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryMaxMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmMemoryUsedMeterConvention;
+import io.micrometer.core.instrument.binder.jvm.convention.otel.OpenTelemetryJvmThreadCountMeterConvention;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -52,105 +66,111 @@ class SemanticConventionAutoConfigurationTests {
 	@Test
 	void registersMicrometerConventionsByDefault() {
 		this.contextRunner.run((context) -> {
-			assertThat(context).hasSingleBean(MicrometerJvmMemoryMeterConventions.class);
-			assertThat(context).hasSingleBean(MicrometerJvmClassLoadingMeterConventions.class);
-			assertThat(context).hasSingleBean(MicrometerJvmCpuMeterConventions.class);
-			assertThat(context).hasSingleBean(MicrometerJvmThreadMeterConventions.class);
-			assertThat(context).doesNotHaveBean(OpenTelemetryJvmMemoryMeterConventions.class);
-			assertThat(context).doesNotHaveBean(OpenTelemetryJvmClassLoadingMeterConventions.class);
-			assertThat(context).doesNotHaveBean(OpenTelemetryJvmCpuMeterConventions.class);
-			assertThat(context).doesNotHaveBean(OpenTelemetryJvmThreadMeterConventions.class);
+			assertThat(context).hasSingleBean(MicrometerJvmMemoryUsedMeterConvention.class);
+			assertThat(context).hasSingleBean(MicrometerJvmMemoryCommittedMeterConvention.class);
+			assertThat(context).hasSingleBean(MicrometerJvmMemoryMaxMeterConvention.class);
+			assertThat(context).hasSingleBean(MicrometerJvmClassCountMeterConvention.class);
+			assertThat(context).hasSingleBean(MicrometerJvmClassLoadedMeterConvention.class);
+			assertThat(context).hasSingleBean(MicrometerJvmClassUnloadedMeterConvention.class);
+			assertThat(context).hasSingleBean(MicrometerJvmCpuCountMeterConvention.class);
+			assertThat(context).hasSingleBean(MicrometerJvmCpuLoadMeterConvention.class);
+			assertThat(context).hasSingleBean(MicrometerJvmCpuTimeMeterConvention.class);
+			assertThat(context).hasSingleBean(MicrometerJvmThreadCountMeterConvention.class);
+			assertThat(context).doesNotHaveBean(OpenTelemetryJvmMemoryUsedMeterConvention.class);
+			assertThat(context).doesNotHaveBean(OpenTelemetryJvmMemoryCommittedMeterConvention.class);
+			assertThat(context).doesNotHaveBean(OpenTelemetryJvmMemoryMaxMeterConvention.class);
+			assertThat(context).doesNotHaveBean(OpenTelemetryJvmClassCountMeterConvention.class);
+			assertThat(context).doesNotHaveBean(OpenTelemetryJvmClassLoadedMeterConvention.class);
+			assertThat(context).doesNotHaveBean(OpenTelemetryJvmClassUnloadedMeterConvention.class);
+			assertThat(context).doesNotHaveBean(OpenTelemetryJvmCpuCountMeterConvention.class);
+			assertThat(context).doesNotHaveBean(OpenTelemetryJvmCpuLoadMeterConvention.class);
+			assertThat(context).doesNotHaveBean(OpenTelemetryJvmCpuTimeMeterConvention.class);
+			assertThat(context).doesNotHaveBean(OpenTelemetryJvmThreadCountMeterConvention.class);
 		});
 	}
 
 	@Test
 	void registersOpenTelemetryConventionsWhenConventionsSetToOpenTelemetry() {
 		this.contextRunner.withPropertyValues("management.observations.conventions=opentelemetry").run((context) -> {
-			assertThat(context).hasSingleBean(JvmMemoryMeterConventions.class)
-				.hasSingleBean(OpenTelemetryJvmMemoryMeterConventions.class);
-			assertThat(context).hasSingleBean(JvmClassLoadingMeterConventions.class)
-				.hasSingleBean(OpenTelemetryJvmClassLoadingMeterConventions.class);
-			assertThat(context).hasSingleBean(JvmCpuMeterConventions.class)
-				.hasSingleBean(OpenTelemetryJvmCpuMeterConventions.class);
-			assertThat(context).hasSingleBean(JvmThreadMeterConventions.class)
-				.hasSingleBean(OpenTelemetryJvmThreadMeterConventions.class);
+			assertThat(context).hasSingleBean(JvmMemoryUsedMeterConvention.class)
+				.hasSingleBean(OpenTelemetryJvmMemoryUsedMeterConvention.class);
+			assertThat(context).hasSingleBean(JvmMemoryCommittedMeterConvention.class)
+				.hasSingleBean(OpenTelemetryJvmMemoryCommittedMeterConvention.class);
+			assertThat(context).hasSingleBean(JvmMemoryMaxMeterConvention.class)
+				.hasSingleBean(OpenTelemetryJvmMemoryMaxMeterConvention.class);
+			assertThat(context).hasSingleBean(JvmClassCountMeterConvention.class)
+				.hasSingleBean(OpenTelemetryJvmClassCountMeterConvention.class);
+			assertThat(context).hasSingleBean(JvmClassLoadedMeterConvention.class)
+				.hasSingleBean(OpenTelemetryJvmClassLoadedMeterConvention.class);
+			assertThat(context).hasSingleBean(JvmClassUnloadedMeterConvention.class)
+				.hasSingleBean(OpenTelemetryJvmClassUnloadedMeterConvention.class);
+			assertThat(context).hasSingleBean(JvmCpuCountMeterConvention.class)
+				.hasSingleBean(OpenTelemetryJvmCpuCountMeterConvention.class);
+			assertThat(context).hasSingleBean(JvmCpuLoadMeterConvention.class)
+				.hasSingleBean(OpenTelemetryJvmCpuLoadMeterConvention.class);
+			assertThat(context).hasSingleBean(JvmCpuTimeMeterConvention.class)
+				.hasSingleBean(OpenTelemetryJvmCpuTimeMeterConvention.class);
+			assertThat(context).hasSingleBean(JvmThreadCountMeterConvention.class)
+				.hasSingleBean(OpenTelemetryJvmThreadCountMeterConvention.class);
 		});
 	}
 
 	@Test
 	void allowsCustomMicrometerConventionsToBeUsed() {
 		this.contextRunner.withPropertyValues("management.observations.conventions=micrometer")
-			.withUserConfiguration(CustomJvmMemoryMeterConventionsConfiguration.class)
+			.withUserConfiguration(CustomJvmMemoryUsedMeterConventionConfiguration.class)
 			.run((context) -> {
-				assertThat(context).hasSingleBean(JvmMemoryMeterConventions.class)
-					.hasBean("customJvmMemoryMeterConventions");
-				assertThat(context).doesNotHaveBean(MicrometerJvmMemoryMeterConventions.class);
-				assertThat(context).hasSingleBean(MicrometerJvmClassLoadingMeterConventions.class);
-				assertThat(context).hasSingleBean(MicrometerJvmCpuMeterConventions.class);
-				assertThat(context).hasSingleBean(MicrometerJvmThreadMeterConventions.class);
+				assertThat(context).hasSingleBean(JvmMemoryUsedMeterConvention.class)
+					.hasBean("customJvmMemoryUsedMeterConvention");
+				assertThat(context).doesNotHaveBean(MicrometerJvmMemoryUsedMeterConvention.class);
+				assertThat(context).hasSingleBean(MicrometerJvmMemoryCommittedMeterConvention.class);
+				assertThat(context).hasSingleBean(MicrometerJvmMemoryMaxMeterConvention.class);
+				assertThat(context).hasSingleBean(MicrometerJvmClassCountMeterConvention.class);
+				assertThat(context).hasSingleBean(MicrometerJvmClassLoadedMeterConvention.class);
+				assertThat(context).hasSingleBean(MicrometerJvmClassUnloadedMeterConvention.class);
+				assertThat(context).hasSingleBean(MicrometerJvmCpuCountMeterConvention.class);
+				assertThat(context).hasSingleBean(MicrometerJvmCpuLoadMeterConvention.class);
+				assertThat(context).hasSingleBean(MicrometerJvmCpuTimeMeterConvention.class);
+				assertThat(context).hasSingleBean(MicrometerJvmThreadCountMeterConvention.class);
 			});
 	}
 
 	@Test
 	void allowsCustomOpenTelemetryConventionsToBeUsed() {
 		this.contextRunner.withPropertyValues("management.observations.conventions=opentelemetry")
-			.withUserConfiguration(CustomJvmClassLoadingMeterConventionsConfiguration.class)
+			.withUserConfiguration(CustomJvmClassLoadedMeterConventionConfiguration.class)
 			.run((context) -> {
-				assertThat(context).hasSingleBean(JvmClassLoadingMeterConventions.class)
-					.hasBean("customJvmClassLoadingMeterConventions");
-				assertThat(context).doesNotHaveBean(MicrometerJvmClassLoadingMeterConventions.class);
-				assertThat(context).hasSingleBean(OpenTelemetryJvmMemoryMeterConventions.class);
-				assertThat(context).hasSingleBean(OpenTelemetryJvmCpuMeterConventions.class);
-				assertThat(context).hasSingleBean(OpenTelemetryJvmThreadMeterConventions.class);
+				assertThat(context).hasSingleBean(JvmClassLoadedMeterConvention.class)
+					.hasBean("customJvmClassLoadedMeterConvention");
+				assertThat(context).doesNotHaveBean(OpenTelemetryJvmClassLoadedMeterConvention.class);
+				assertThat(context).hasSingleBean(OpenTelemetryJvmMemoryUsedMeterConvention.class);
+				assertThat(context).hasSingleBean(OpenTelemetryJvmMemoryCommittedMeterConvention.class);
+				assertThat(context).hasSingleBean(OpenTelemetryJvmMemoryMaxMeterConvention.class);
+				assertThat(context).hasSingleBean(OpenTelemetryJvmClassCountMeterConvention.class);
+				assertThat(context).hasSingleBean(OpenTelemetryJvmClassUnloadedMeterConvention.class);
+				assertThat(context).hasSingleBean(OpenTelemetryJvmCpuCountMeterConvention.class);
+				assertThat(context).hasSingleBean(OpenTelemetryJvmCpuLoadMeterConvention.class);
+				assertThat(context).hasSingleBean(OpenTelemetryJvmCpuTimeMeterConvention.class);
+				assertThat(context).hasSingleBean(OpenTelemetryJvmThreadCountMeterConvention.class);
 			});
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	static class CustomJvmMemoryMeterConventionsConfiguration {
+	static class CustomJvmMemoryUsedMeterConventionConfiguration {
 
 		@Bean
-		JvmMemoryMeterConventions customJvmMemoryMeterConventions() {
-			return new JvmMemoryMeterConventions() {
-				@Override
-				public MeterConvention<MemoryPoolMXBean> getMemoryUsedConvention() {
-					return new SimpleMeterConvention<>("my.memory.used");
-				}
-
-				@Override
-				public MeterConvention<MemoryPoolMXBean> getMemoryCommittedConvention() {
-					return new SimpleMeterConvention<>("my.memory.committed");
-				}
-
-				@Override
-				public MeterConvention<MemoryPoolMXBean> getMemoryMaxConvention() {
-					return new SimpleMeterConvention<>("my.memory.max");
-				}
-			};
+		JvmMemoryUsedMeterConvention customJvmMemoryUsedMeterConvention() {
+			return JvmMemoryUsedMeterConvention.of("my.memory.used");
 		}
 
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	static class CustomJvmClassLoadingMeterConventionsConfiguration {
+	static class CustomJvmClassLoadedMeterConventionConfiguration {
 
 		@Bean
-		JvmClassLoadingMeterConventions customJvmClassLoadingMeterConventions() {
-			return new JvmClassLoadingMeterConventions() {
-				@Override
-				public MeterConvention<Object> loadedConvention() {
-					return new SimpleMeterConvention<>("my.classes.loaded");
-				}
-
-				@Override
-				public MeterConvention<Object> unloadedConvention() {
-					return new SimpleMeterConvention<>("my.classes.unloaded");
-				}
-
-				@Override
-				public MeterConvention<Object> currentClassCountConvention() {
-					return new SimpleMeterConvention<>("my.classes.current");
-				}
-			};
+		JvmClassLoadedMeterConvention customJvmClassLoadedMeterConvention() {
+			return JvmClassLoadedMeterConvention.of("my.classes.loaded");
 		}
 
 	}
